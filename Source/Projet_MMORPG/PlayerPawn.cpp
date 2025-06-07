@@ -31,6 +31,8 @@ void APlayerPawn::BeginPlay()
 	Super::BeginPlay();
 	if (HasAuthority()) {
 		Init();
+
+		
 	}
 	
 }
@@ -39,7 +41,13 @@ void APlayerPawn::BeginPlay()
 void APlayerPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if ( fightingCharacter == nullptr) {
+		this->fightingCharacter = Cast<AFightingCharacter>(GetAttachParentActor());
+		if(fightingCharacter != nullptr)
+		UE_LOG(LogTemp, Warning, TEXT("Fighitng Character OK!!!"));
+	}
 
+	
 }
 
 // Called to bind functionality to input
@@ -54,7 +62,8 @@ void APlayerPawn::MoveToward_Implementation(FVector location) {
 	fightingCharacter->MoveCommand(location);
 }
 void APlayerPawn::Attack_Implementation(AFightingCharacter * enemy) {
-	fightingCharacter->AttackCommand(enemy);
+	if (enemy != fightingCharacter && enemy != nullptr)
+		fightingCharacter->AttackCommand(enemy);
 }
 void APlayerPawn::StopAction_Implementation() {
 	
@@ -66,10 +75,21 @@ void APlayerPawn::Init_Implementation() {
 	AttachToActor(fightingCharacter, FAttachmentTransformRules::KeepRelativeTransform);
 	SetActorRelativeLocation(FVector::ZeroVector);
 	fightingCharacter->SpawnDefaultController();
+	fightingCharacter->SetAttributes(attributes);
 	
+}
+void APlayerPawn::Interact_Implementation(AInteractableActor* interactable) {
+	fightingCharacter->InteractCommand(interactable);
 }
 
-void APlayerPawn::TurnCamera(bool turnLeft) {
-	
+void APlayerPawn::UseAction_Implementation( TSubclassOf<ASkillAbility> skillAbilityClass) {
+	fightingCharacter->CastCommand(skillAbilityClass);
 }
+void APlayerPawn::UseActionFighter_Implementation(TSubclassOf<ASkillAbility> skillAbilityClass, AFightingCharacter * target) {
+	fightingCharacter->CastCommand(skillAbilityClass, target);
+}
+void APlayerPawn::UseActionLocation_Implementation(TSubclassOf<ASkillAbility> skillAbilityClass, const  FVector& target) {
+	fightingCharacter->CastCommand(skillAbilityClass, target);
+}
+
 

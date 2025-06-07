@@ -7,7 +7,11 @@
 #include <GameFramework/SpringArmComponent.h>
 #include <Camera/CameraComponent.h>
 #include "FightingCharacter.h"
+#include "FightingCharacterAttributes.h"
+
 #include "PlayerPawn.generated.h"
+
+class AInteractableActor;
 
 UCLASS()
 class PROJET_MMORPG_API APlayerPawn : public APawn
@@ -29,7 +33,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AFightingCharacter> fightingCharacterClass;
 
+	UPROPERTY(BlueprintReadOnly)
 	AFightingCharacter* fightingCharacter;
+
+
+	UPROPERTY(EditAnywhere)
+	UFightingCharacterAttributes* attributes;
+
 
 
 protected:
@@ -56,9 +66,20 @@ public:
 	void Attack(AFightingCharacter * otherFightingCharacter);
 
 	UFUNCTION(Server, Reliable)
+	void Interact(AInteractableActor* interactable);
+	UFUNCTION(Server, Reliable)
 	void StopAction();
 	UFUNCTION(Server,Reliable)
 	void Init();
 
-	void TurnCamera(bool turnLeft);
+	UFUNCTION(Server, Reliable)
+	void UseAction( TSubclassOf<ASkillAbility> skillAbilityClass);
+
+	UFUNCTION(Server, Reliable)
+	void UseActionFighter(  TSubclassOf<ASkillAbility> skillAbilityClass, AFightingCharacter * target);
+
+	UFUNCTION(Server, Reliable)
+	void UseActionLocation( TSubclassOf<ASkillAbility> skillAbilityClass, const FVector & target);
+
+
 };

@@ -1,0 +1,25 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Engine/DataAsset.h"
+#include "PlayerCharacterAttributes.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class PROJET_MMORPG_API UPlayerCharacterAttributes : public UPrimaryDataAsset
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	float walkSpeed;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	float interactionRange;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	float meleeRange;
+};

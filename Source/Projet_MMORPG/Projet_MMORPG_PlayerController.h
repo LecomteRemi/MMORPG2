@@ -5,8 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "InputAction.h"
+#include "CameraSettingsAsset.h"
 #include "Projet_MMORPG_PlayerController.generated.h"
-
+class ASkillAbility;
 /**
  * 
  */
@@ -16,6 +17,7 @@ class PROJET_MMORPG_API AProjet_MMORPG_PlayerController : public APlayerControll
 	GENERATED_BODY()
 
 public:
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
 
@@ -28,10 +30,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* TurnCameraRightAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	TArray<class UInputAction*> actionBarActions;
+
 	UPROPERTY(EditAnywhere)
-	float cameraRotationSpeed=10;
+	UCameraSettingsAsset * cameraSettings;
+
 	UPROPERTY(EditAnywhere)
-	float defaultCameraPitch;
+	TSubclassOf<ASkillAbility> mockupAbilityClass;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ASkillAbility> mockupAbilityClassLocation;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ASkillAbility> mockupAbilityClassFighter;
+
+	UPROPERTY(EditAnywhere)
+	TArray<TSubclassOf<ASkillAbility>> actionBarList;
+
+
 
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -39,6 +54,12 @@ private:
 	void LeftClick();
 	void TurnCameraLeft();
 	void TurnCameraRight();
+	void TargetClick(FHitResult & hit);
+	void DisableTargeting();
+	void UseAction(const FInputActionValue& value, int actionBarNumber);
+
+	bool isTargetingForAbility;
+	TSubclassOf<ASkillAbility> abilityUsed;
 
 	
 };
