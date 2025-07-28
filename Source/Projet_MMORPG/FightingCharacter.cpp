@@ -30,7 +30,7 @@ void AFightingCharacter::BeginPlay()
 	Super::BeginPlay();
 	FTimerHandle updateTimer;
 	GetWorld()->GetTimerManager().SetTimer(updateTimer, this, &AFightingCharacter::Update, 0.016f, true);
-
+	
 	GetCharacterMovement()->MaxWalkSpeed = attributes->walkSpeed;
 	
 }
@@ -77,6 +77,15 @@ void AFightingCharacter::StopCommand() {
 }
 void AFightingCharacter::Update() {
 	RegenPVAndMana();
+	UpdateCooldown();
+	if (!HasAuthority()) {
+		UE_LOG(LogTemp, Warning, TEXT("proutprout %d"), abilityList.Num());
+		for (auto& elem : abilityList)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("proutprout %f"), elem.Value);
+		}
+		
+	}
 	if (currentState == EBehaviorState::MOVE) {
 		MoveToward(targetLocation);
 	}
@@ -115,15 +124,13 @@ void AFightingCharacter::Update() {
 
 
 void AFightingCharacter::UpdateAbility() {
-	float castDistance = 200;
-	float castPreparationTime = 2;
-	float castDelayTime=1;
-	if (usedAbilityClass == nullptr) return;
+	if (usedAbilityClass == nullptr || usedAbility == nullptr) return;
+	if (abilityList[usedAbilityClass] > 0) return;
 	if (currentAbilityState == EAbilityState::GET_IN_RANGE) {
-		if (spellTargetType == ETargetType::FIGHTER && FVector::Dist2D(this->GetActorLocation(), spellTarget.fightingCharacter->GetActorLocation()) > castDistance) {
+		if (spellTargetType == ETargetType::FIGHTER && FVector::Dist2D(this->GetActorLocation(), spellTarget.fightingCharacter->GetActorLocation()) > usedAbility->skillAbilityDetails->range) {
 			MoveToward(spellTarget.fightingCharacter->GetActorLocation());
 		}
-		else if (spellTargetType == ETargetType::LOCATION && FVector::Dist2D(this->GetActorLocation(), (spellTarget.location)) > castDistance) {
+		else if (spellTargetType == ETargetType::LOCATION && FVector::Dist2D(this->GetActorLocation(), (spellTarget.location)) > usedAbility->skillAbilityDetails->range) {
 
 			MoveToward((spellTarget.location));
 		}
@@ -134,24 +141,28 @@ void AFightingCharacter::UpdateAbility() {
 			startCastingTime = GetWorld()->TimeSeconds;
 		}
 	}
-	else if (currentAbilityState == EAbilityState::START_CASTING){
-		if (GetWorld()->TimeSeconds >= startCastingTime + castPreparationTime) {
+	if (currentAbilityState == EAbilityState::START_CASTING){
+		if (GetWorld()->TimeSeconds >= startCastingTime + usedAbility->skillAbilityDetails->preparationTime) {
 
 			UE_LOG(LogTemp, Warning, TEXT("Je lance le sort %d"), (int) HasAuthority());
 			currentAbilityState = EAbilityState::CAST;
-			ASkillAbility* abilityInstance = GetWorld()->SpawnActor<ASkillAbility>(mockupAbilityClass);
-			mana -= abilityInstance->skillAbilityDetails->manaCost;
-			abilityInstance->ActivateAbility(this);
+			//ASkillAbility* abilityInstance = GetWorld()->SpawnActor<ASkillAbility>(mockupAbilityClass);
+			usedAbility->SetActorLocation(this->GetActorLocation());
+			mana -= usedAbility->skillAbilityDetails->manaCost;
+			usedAbility->ActivateAbility(this);
 		}
 	}
-	else if (currentAbilityState == EAbilityState::CAST) {
+	if (currentAbilityState == EAbilityState::CAST) {
 
 		//currentAbilityState = EAbilityState::END_CASTING;
 	}
-	else if (currentAbilityState == EAbilityState::END_CASTING && GetWorld()->TimeSeconds >= endCastingTime + castDelayTime) {
+	if (currentAbilityState == EAbilityState::END_CASTING && GetWorld()->TimeSeconds >= endCastingTime + usedAbility->skillAbilityDetails->delayTime) {
 		currentState = EBehaviorState::NONE;
 		currentAbilityState = EAbilityState::NONE;
+		//abilityList[usedAbilityClass] = usedAbilityClass.GetDefaultObject()->skillAbilityDetails->cooldown;
+		SetCooldownOnClient(usedAbilityClass);
 		usedAbilityClass = nullptr;
+		usedAbility = nullptr;
 		UE_LOG(LogTemp, Warning, TEXT("Je peux bouger"));
 	}
 }
@@ -159,7 +170,7 @@ void AFightingCharacter::UpdateAbility() {
 
 void AFightingCharacter::EndCasting() {
 	currentAbilityState = EAbilityState::END_CASTING;
-
+	
 	UE_LOG(LogTemp, Warning, TEXT("Le sort est lancee"));
 	this->endCastingTime = GetWorld()->TimeSeconds;
 }
@@ -241,6 +252,8 @@ void AFightingCharacter::CastCommand(TSubclassOf<ASkillAbility> abilityClass, AF
 	if (!CanInterruptAction()) return;
 
 	usedAbilityClass = abilityClass;
+	UE_LOG(LogTemp, Warning, TEXT("-------------------"));
+	usedAbility = GetWorld()->SpawnActor<ASkillAbility>(usedAbilityClass);
 	UE_LOG(LogTemp, Warning, TEXT("Je lance un sort sur ce type"));
 
 	spellTarget.fightingCharacter = target;
@@ -252,6 +265,8 @@ void AFightingCharacter::CastCommand(TSubclassOf<ASkillAbility> abilityClass, AF
 void AFightingCharacter::CastCommand(TSubclassOf<ASkillAbility> abilityClass, FVector target) {
 	if (!CanInterruptAction()) return;
 	usedAbilityClass = abilityClass;
+	UE_LOG(LogTemp, Warning, TEXT("-------------------"));
+	usedAbility = GetWorld()->SpawnActor<ASkillAbility>(usedAbilityClass);
 	UE_LOG(LogTemp, Warning, TEXT("Je lance un sort a un endroit"));
 
 	spellTarget.location = target;
@@ -262,6 +277,8 @@ void AFightingCharacter::CastCommand(TSubclassOf<ASkillAbility> abilityClass, FV
 void AFightingCharacter::CastCommand(TSubclassOf<ASkillAbility> abilityClass) {
 	if (!CanInterruptAction()) return;
 	usedAbilityClass = abilityClass;
+	UE_LOG(LogTemp, Warning, TEXT("-------------------"));
+	usedAbility = GetWorld()->SpawnActor<ASkillAbility>(usedAbilityClass);
 	UE_LOG(LogTemp, Warning, TEXT("Je lance un sort"));
 
 	spellTargetType = ETargetType::NONE;
@@ -275,4 +292,36 @@ void AFightingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AFightingCharacter, mana);
+	DOREPLIFETIME(AFightingCharacter, PV);
+}
+
+void AFightingCharacter::AddAbility(TSubclassOf<ASkillAbility> ability) {
+	abilityList.Add(ability,0);
+	//SetCooldownOnClient(ability);
+	UE_LOG(LogTemp, Warning, TEXT("Todokeyo!"));
+}
+
+
+void AFightingCharacter::UpdateCooldown() {
+	float deltaTime = GetWorld()->GetDeltaSeconds();
+	for (auto& elem : abilityList)
+	{
+		float value = 0;
+		if (elem.Value > 0) {
+			value = elem.Value - deltaTime;
+			value = value < 0 ? 0 : value;
+			abilityList[elem.Key] = value;
+			//UE_LOG(LogTemp, Warning, TEXT("Cooldown %f"), abilityList[elem.Key]);
+		}
+	}
+}
+
+void AFightingCharacter::SetCooldownOnClient_Implementation(TSubclassOf<ASkillAbility> ability) {
+	//if (HasAuthority()) return;
+	if (!abilityList.Contains(ability)) {
+		abilityList.Add(ability,ability.GetDefaultObject()->skillAbilityDetails->cooldown);
+	}
+	else {
+		abilityList[ability] = ability.GetDefaultObject()->skillAbilityDetails->cooldown;
+	}
 }

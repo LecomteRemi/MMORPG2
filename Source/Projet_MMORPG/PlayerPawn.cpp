@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
+#include "AbilityList.h"
 #include "PlayerPawn.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 APlayerPawn::APlayerPawn()
@@ -31,9 +32,11 @@ void APlayerPawn::BeginPlay()
 	Super::BeginPlay();
 	if (HasAuthority()) {
 		Init();
+		initiated = true;
 
 		
 	}
+
 	
 }
 
@@ -41,10 +44,18 @@ void APlayerPawn::BeginPlay()
 void APlayerPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if ( fightingCharacter == nullptr) {
+	if (!initiated && fightingCharacter != nullptr) {
+		initiated = true;
+
+		if (abilityList != nullptr) {
+			for (int i = 0; i < abilityList->abilities.Num()-1; i++) {
+				fightingCharacter->AddAbility(abilityList->abilities[i]);
+			}
+		}
+	}
+
+	if (fightingCharacter == nullptr) {
 		this->fightingCharacter = Cast<AFightingCharacter>(GetAttachParentActor());
-		if(fightingCharacter != nullptr)
-		UE_LOG(LogTemp, Warning, TEXT("Fighitng Character OK!!!"));
 	}
 
 	
@@ -58,8 +69,9 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 }
 
 void APlayerPawn::MoveToward_Implementation(FVector location) {
-	UE_LOG(LogTemp, Warning, TEXT("On y va"));
 	fightingCharacter->MoveCommand(location);
+	fightingCharacter->AddAbility(abilityList->abilities[2]);
+
 }
 void APlayerPawn::Attack_Implementation(AFightingCharacter * enemy) {
 	if (enemy != fightingCharacter && enemy != nullptr)
@@ -68,15 +80,27 @@ void APlayerPawn::Attack_Implementation(AFightingCharacter * enemy) {
 void APlayerPawn::StopAction_Implementation() {
 	
 }
-void APlayerPawn::Init_Implementation() {
-	UE_LOG(LogTemp, Warning, TEXT("Init"));
+void APlayerPawn::Init() {
 	
 	fightingCharacter = GetWorld()->SpawnActor<AFightingCharacter>(fightingCharacterClass, GetActorLocation(), GetActorRotation());
 	AttachToActor(fightingCharacter, FAttachmentTransformRules::KeepRelativeTransform);
 	SetActorRelativeLocation(FVector::ZeroVector);
 	fightingCharacter->SpawnDefaultController();
 	fightingCharacter->SetAttributes(attributes);
+	if (abilityList != nullptr) {
+		if (fightingCharacter != nullptr) {
+			for (int i = 0; i < abilityList->abilities.Num() - 1; i++) {
+				fightingCharacter->AddAbility(abilityList->abilities[i]);
+			}
+		}
+	}
 	
+	
+}
+void APlayerPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(APlayerPawn, fightingCharacter);
 }
 void APlayerPawn::Interact_Implementation(AInteractableActor* interactable) {
 	fightingCharacter->InteractCommand(interactable);
@@ -84,12 +108,17 @@ void APlayerPawn::Interact_Implementation(AInteractableActor* interactable) {
 
 void APlayerPawn::UseAction_Implementation( TSubclassOf<ASkillAbility> skillAbilityClass) {
 	fightingCharacter->CastCommand(skillAbilityClass);
+
 }
 void APlayerPawn::UseActionFighter_Implementation(TSubclassOf<ASkillAbility> skillAbilityClass, AFightingCharacter * target) {
 	fightingCharacter->CastCommand(skillAbilityClass, target);
 }
 void APlayerPawn::UseActionLocation_Implementation(TSubclassOf<ASkillAbility> skillAbilityClass, const  FVector& target) {
 	fightingCharacter->CastCommand(skillAbilityClass, target);
+}
+void APlayerPawn::AddAbility(TSubclassOf<ASkillAbility> ability) {
+	fightingCharacter->AddAbility(ability);
+
 }
 
 

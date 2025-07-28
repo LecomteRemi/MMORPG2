@@ -8,6 +8,7 @@
 #include "CameraSettingsAsset.h"
 #include "Projet_MMORPG_PlayerController.generated.h"
 class ASkillAbility;
+class AbilityList;
 /**
  * 
  */
@@ -45,7 +46,6 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<ASkillAbility>> actionBarList;
-
 
 
 	virtual void BeginPlay() override;

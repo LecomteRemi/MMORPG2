@@ -8,13 +8,13 @@
 #include "InteractableActor.h"
 #include "SkillAbility.h"
 #include "SkillAbilityDetails.h"
+#include "AbilityList.h"
 
  void AProjet_MMORPG_PlayerController::BeginPlay() {
 	 Super::BeginPlay();
 	 this->bShowMouseCursor = true;
 	 this->bEnableClickEvents = true;
 	 this->bEnableMouseOverEvents = true;
-	 UE_LOG(LogTemp, Warning, TEXT("ok"));
 	 if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	 {
 		 Subsystem->AddMappingContext(DefaultMappingContext, 0);
@@ -23,9 +23,21 @@
 	 SetControlRotation(defaultRotator);
 
 	 actionBarList.SetNum(10, true);
-	 actionBarList[0] = mockupAbilityClass;
-	 actionBarList[1] = mockupAbilityClassLocation;
-	 actionBarList[2] = mockupAbilityClassFighter;
+	 if (HasAuthority()) return;
+	 if (Cast<APlayerPawn>(GetPawn())->abilityList != nullptr) {
+
+
+		 
+		 actionBarList[0] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[0]; //mockupAbilityClass;
+		 
+		 actionBarList[1] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];
+		 actionBarList[2] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];
+
+		 
+	 }
+	 
+	 
+	 
 }
 
  void AProjet_MMORPG_PlayerController::SetupInputComponent()
@@ -44,8 +56,6 @@
  }
 
  void AProjet_MMORPG_PlayerController::LeftClick() {
-
-	 UE_LOG(LogTemp, Warning, TEXT("click"));
 	 FHitResult hit;
 	 TArray<TEnumAsByte<EObjectTypeQuery>> objectTypes;
 	 objectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
@@ -56,11 +66,9 @@
 		 if (isTargetingForAbility) {
 			 TargetClick(hit);
 		 } else if (hit.GetComponent()->GetCollisionObjectType() == ECC_WorldStatic) {
-			 UE_LOG(LogTemp, Warning, TEXT("static"));
 			 Cast<APlayerPawn>(GetPawn())->MoveToward(hit.ImpactPoint);
 		 }
 		 else if (hit.GetComponent()->GetCollisionObjectType() == ECC_Pawn) {
-			 UE_LOG(LogTemp, Warning, TEXT("pawn"));
 			 AFightingCharacter* otherFightingCharacter = Cast<AFightingCharacter>(hit.GetActor());
 			 if (otherFightingCharacter) {
 				 Cast<APlayerPawn>(GetPawn())->Attack(otherFightingCharacter);
@@ -76,7 +84,7 @@
  }
 
  void AProjet_MMORPG_PlayerController::TargetClick(FHitResult& hit) {
-	 UE_LOG(LogTemp, Warning, TEXT("targetClick"));
+
 	 ETargetType targetType = abilityUsed->GetDefaultObject<ASkillAbility>()->skillAbilityDetails->targetType;
 	 if (targetType == ETargetType::FIGHTER && hit.GetComponent()->GetCollisionObjectType() == ECC_Pawn) {
 		 AFightingCharacter* otherFightingCharacter = Cast<AFightingCharacter>(hit.GetActor());
@@ -110,6 +118,8 @@
 	 if (abilityToUse->GetDefaultObject<ASkillAbility>()->skillAbilityDetails->manaCost > Cast<APlayerPawn>(GetPawn())->fightingCharacter->mana) return;
 	 if (abilityToUse->GetDefaultObject<ASkillAbility>()->skillAbilityDetails->targetType == ETargetType::NONE) {
 		 Cast<APlayerPawn>(GetPawn())->UseAction(abilityToUse);
+
+		 UE_LOG(LogTemp, Warning, TEXT("ko2"));
 		 DisableTargeting();
 	 }
 	 else {
@@ -120,6 +130,7 @@
 			 UE_LOG(LogTemp, Warning, TEXT("capacite choisie"));
 		 }
 		 else {
+			 UE_LOG(LogTemp, Warning, TEXT("ko1"));
 			 DisableTargeting();
 		 }
 	 }

@@ -30,4 +30,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	int manaCost;
+
+	UPROPERTY(EditAnyWhere)
+	float cooldown;
 };

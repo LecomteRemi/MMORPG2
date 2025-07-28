@@ -19,6 +19,8 @@ union SpellTarget {
 
 class AInteractableActor;
 class UStatsComponent;
+
+class UAbilityList;
 class ASkillAbility;
 
 UCLASS(BlueprintType)
@@ -59,16 +61,17 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UFightingCharacterAttributes* attributes;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<ASkillAbility> mockupAbilityClass;
-
 	TSubclassOf<ASkillAbility> usedAbilityClass;
+	ASkillAbility * usedAbility;
+
 
 	UFUNCTION()
 	void MoveToward(const FVector& location);
 	void Attack(AFightingCharacter * enemy);
 
 	void RegenPVAndMana();
+
+	void UpdateCooldown();
 
 	double lastAttackTime;
 
@@ -80,7 +83,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStatsComponent* stats;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	float PV;
 
 	
@@ -93,6 +96,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	float mana;
+
+	UPROPERTY(EditAnywhere)
+	TMap<TSubclassOf<ASkillAbility>, float> abilityList;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -124,6 +130,11 @@ public:
 
 	bool CanInterruptAction();
 
+	UFUNCTION()
+	void AddAbility(TSubclassOf<ASkillAbility> ability);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void SetCooldownOnClient(TSubclassOf<ASkillAbility> ability);
 
 	
 

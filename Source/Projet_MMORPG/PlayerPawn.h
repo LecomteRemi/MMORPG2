@@ -12,12 +12,15 @@
 #include "PlayerPawn.generated.h"
 
 class AInteractableActor;
+class UAbilityList;
 
 UCLASS()
 class PROJET_MMORPG_API APlayerPawn : public APawn
 {
 	GENERATED_BODY()
 
+private:
+	bool initiated;
 public:
 	// Sets default values for this pawn's properties
 	APlayerPawn();
@@ -33,12 +36,15 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AFightingCharacter> fightingCharacterClass;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly,Replicated)
 	AFightingCharacter* fightingCharacter;
 
 
 	UPROPERTY(EditAnywhere)
 	UFightingCharacterAttributes* attributes;
+
+	UPROPERTY(EditAnywhere)
+	UAbilityList* abilityList;
 
 
 
@@ -69,7 +75,7 @@ public:
 	void Interact(AInteractableActor* interactable);
 	UFUNCTION(Server, Reliable)
 	void StopAction();
-	UFUNCTION(Server,Reliable)
+	UFUNCTION()
 	void Init();
 
 	UFUNCTION(Server, Reliable)
@@ -80,6 +86,9 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void UseActionLocation( TSubclassOf<ASkillAbility> skillAbilityClass, const FVector & target);
+
+	UFUNCTION()
+	void AddAbility(TSubclassOf<ASkillAbility> ability);
 
 
 };

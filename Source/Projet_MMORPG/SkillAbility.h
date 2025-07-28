@@ -12,7 +12,8 @@
 
 class AFightingCharacter;
 class USkillAbilityDetails;
-UCLASS(Abstract, Blueprintable)
+class UActionDetailsData;
+UCLASS(Abstract,Blueprintable)
 class PROJET_MMORPG_API ASkillAbility : public AActor
 {
 	GENERATED_BODY()
@@ -23,5 +24,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	USkillAbilityDetails* skillAbilityDetails;
+	UPROPERTY(EditAnywhere)
+	UActionDetailsData* actionDetails;
+
+
 
 };
