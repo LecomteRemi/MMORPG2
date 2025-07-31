@@ -22,6 +22,7 @@ class UStatsComponent;
 
 class UAbilityList;
 class ASkillAbility;
+class AItem;
 
 UCLASS(BlueprintType)
 class PROJET_MMORPG_API AFightingCharacter : public ACharacter
@@ -99,6 +100,8 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TMap<TSubclassOf<ASkillAbility>, float> abilityList;
+	UPROPERTY(EditAnywhere)
+	TMap<TSubclassOf<AItem>, int> itemList;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -115,6 +118,7 @@ public:
 	void CastCommand(TSubclassOf<ASkillAbility> abilityClass,AFightingCharacter* target);
 	void CastCommand(TSubclassOf<ASkillAbility> abilityClass, FVector target);
 	void CastCommand(TSubclassOf<ASkillAbility> abilityClass);
+	void UseItem(TSubclassOf<AItem> itemClass);
 	void Update();
 	void UpdateAbility();
 	void SetAttributes(UFightingCharacterAttributes* attributes);
@@ -136,8 +140,22 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void SetCooldownOnClient(TSubclassOf<ASkillAbility> ability);
 
-	
 
+	UFUNCTION()
+	int GetNbItem(TSubclassOf<AItem> item);
+	UFUNCTION(NetMulticast, Reliable)
+	void IncreaseNbItem(TSubclassOf<AItem> item, int increment);
+	UFUNCTION(NetMulticast, Reliable)
+	void DecreaseNbItem(TSubclassOf<AItem> item, int decrement);
+
+	UFUNCTION(BlueprintCallable)
+	void IncreasePV(int increment);
+	UFUNCTION(BlueprintCallable)
+	void DecreasePV(int decrement);
+	UFUNCTION(BlueprintCallable)
+	void IncreaseMana(int increment);
+	UFUNCTION(BlueprintCallable)
+	void DecreaseMana(int decrement);
 
 
 

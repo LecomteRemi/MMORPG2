@@ -9,6 +9,7 @@
 #include "Projet_MMORPG_PlayerController.generated.h"
 class ASkillAbility;
 class AbilityList;
+class AItem;
 /**
  * 
  */
@@ -37,16 +38,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	UCameraSettingsAsset * cameraSettings;
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<ASkillAbility> mockupAbilityClass;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<ASkillAbility> mockupAbilityClassLocation;
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<ASkillAbility> mockupAbilityClassFighter;
 
 	UPROPERTY(EditAnywhere)
-	TArray<TSubclassOf<ASkillAbility>> actionBarList;
-
+	TArray<TSubclassOf<ASkillAbility>> skillBarList;
+	UPROPERTY(EditAnywhere)
+	TArray<TSubclassOf<AItem>> itemBarList;
 
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -57,6 +53,10 @@ private:
 	void TargetClick(FHitResult & hit);
 	void DisableTargeting();
 	void UseAction(const FInputActionValue& value, int actionBarNumber);
+	void UseItem(const FInputActionValue& value, int actionBarNumber);
+
+	UFUNCTION(Client,Reliable)
+	void SetActionBarInput();
 
 	bool isTargetingForAbility;
 	TSubclassOf<ASkillAbility> abilityUsed;

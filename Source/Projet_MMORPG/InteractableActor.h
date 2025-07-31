@@ -23,7 +23,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	bool IsInteractable();
-	void Interact(AFightingCharacter * interactor);
-
+	virtual bool IsInteractable();
+	virtual  void Interact(AFightingCharacter * interactor);
+	
 };

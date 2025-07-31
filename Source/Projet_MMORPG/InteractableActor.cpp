@@ -2,12 +2,15 @@
 
 
 #include "InteractableActor.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AInteractableActor::AInteractableActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bNetLoadOnClient = false;
+	bReplicates = true;
 
 }
 
@@ -30,4 +33,3 @@ bool AInteractableActor::IsInteractable() {
 void AInteractableActor::Interact(AFightingCharacter* character) {
 	UE_LOG(LogTemp, Warning, TEXT("Interaction"));
 }
-

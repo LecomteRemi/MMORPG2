@@ -22,24 +22,39 @@
 	 FRotator defaultRotator(cameraSettings->defaultCameraPitch, 0, 0);
 	 SetControlRotation(defaultRotator);
 
-	 actionBarList.SetNum(10, true);
-	 if (HasAuthority()) return;
-	 if (Cast<APlayerPawn>(GetPawn())->abilityList != nullptr) {
+	 skillBarList.SetNum(10, true);
+	// if (HasAuthority()) return;
+	 /*if (Cast<APlayerPawn>(GetPawn())->abilityList != nullptr) {
 
 
 		 
-		 actionBarList[0] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[0]; //mockupAbilityClass;
+		 skillBarList[0] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[0]; //mockupAbilityClass;
 		 
-		 actionBarList[1] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];
-		 actionBarList[2] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];
+		 skillBarList[1] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];
+		 skillBarList[2] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];
 
 		 
-	 }
+	 }*/
+	 SetActionBarInput();
 	 
 	 
 	 
 }
+ void AProjet_MMORPG_PlayerController::SetActionBarInput_Implementation() {
+	 if (Cast<APlayerPawn>(GetPawn())->abilityList != nullptr) {
 
+
+
+		 skillBarList[0] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[0]; //mockupAbilityClass;
+
+		 skillBarList[1] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];
+		 skillBarList[2] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];
+		 itemBarList.Add(GetPawn<APlayerPawn>()->healingItem);
+		 itemBarList.Add(GetPawn<APlayerPawn>()->manaItem);
+
+
+	 }
+ }
  void AProjet_MMORPG_PlayerController::SetupInputComponent()
  {
 	 Super::SetupInputComponent();
@@ -49,8 +64,13 @@
 		EnhancedInputComponent->BindAction(LeftClickAction, ETriggerEvent::Triggered, this, &AProjet_MMORPG_PlayerController::LeftClick);
 		EnhancedInputComponent->BindAction(TurnCameraLeftAction, ETriggerEvent::Triggered, this, &AProjet_MMORPG_PlayerController::TurnCameraLeft);
 		EnhancedInputComponent->BindAction(TurnCameraRightAction, ETriggerEvent::Triggered, this, &AProjet_MMORPG_PlayerController::TurnCameraRight);
-		for (int i = 0; i < actionBarActions.Num();i++) {
+
+		skillBarList.SetNum(10, true);
+		for (int i = 0; i < 3;i++) {
 			EnhancedInputComponent->BindAction(actionBarActions[i], ETriggerEvent::Triggered, this, &AProjet_MMORPG_PlayerController::UseAction,i);
+		}
+		for (int i = 3; i < 5;i++) {
+			EnhancedInputComponent->BindAction(actionBarActions[i], ETriggerEvent::Triggered, this, &AProjet_MMORPG_PlayerController::UseItem, i-3);
 		}
 	 }
  }
@@ -110,11 +130,21 @@
 	 AddYawInput(GetWorld()->GetDeltaSeconds() * cameraSettings->cameraRotationSpeed);
  }
 
+
+ void AProjet_MMORPG_PlayerController::UseItem(const FInputActionValue& value, int actionBarNumber) {
+
+	 UE_LOG(LogTemp, Warning, TEXT("item numero %d"), actionBarNumber);
+	 GetPawn<APlayerPawn>()->UseItem(itemBarList[actionBarNumber]);
+ }
  void AProjet_MMORPG_PlayerController::UseAction(const FInputActionValue& value, int actionBarNumber) {
 	 UE_LOG(LogTemp, Warning, TEXT("action numero %d"), actionBarNumber);
 
-	 if (actionBarList[actionBarNumber] == nullptr) return;
-	 TSubclassOf<ASkillAbility> abilityToUse = actionBarList[actionBarNumber];
+	 if (skillBarList[actionBarNumber] == nullptr) {
+
+		 UE_LOG(LogTemp, Warning, TEXT("failure"), actionBarNumber);
+		 return;
+	 }
+	 TSubclassOf<ASkillAbility> abilityToUse = skillBarList[actionBarNumber];
 	 if (abilityToUse->GetDefaultObject<ASkillAbility>()->skillAbilityDetails->manaCost > Cast<APlayerPawn>(GetPawn())->fightingCharacter->mana) return;
 	 if (abilityToUse->GetDefaultObject<ASkillAbility>()->skillAbilityDetails->targetType == ETargetType::NONE) {
 		 Cast<APlayerPawn>(GetPawn())->UseAction(abilityToUse);

@@ -10,6 +10,7 @@
 #include <Kismet/GameplayStatics.h>
 #include "SkillAbilityDetails.h"
 #include "Net/UnrealNetwork.h"
+#include "Item.h"
 // Sets default values
 AFightingCharacter::AFightingCharacter()
 {
@@ -18,7 +19,6 @@ AFightingCharacter::AFightingCharacter()
 	currentState = EBehaviorState::NONE;
 
 	stats = CreateDefaultSubobject<UStatsComponent>(TEXT("Stats Component"));
-	mana = 0;
 	
 	
 
@@ -30,7 +30,8 @@ void AFightingCharacter::BeginPlay()
 	Super::BeginPlay();
 	FTimerHandle updateTimer;
 	GetWorld()->GetTimerManager().SetTimer(updateTimer, this, &AFightingCharacter::Update, 0.016f, true);
-	
+	mana = stats->GetManaMax();
+	PV = stats->GetPVMax();
 	GetCharacterMovement()->MaxWalkSpeed = attributes->walkSpeed;
 	
 }
@@ -73,19 +74,13 @@ void AFightingCharacter::InteractCommand(AInteractableActor* interactable) {
 }
 void AFightingCharacter::StopCommand() {
 	if (!CanInterruptAction()) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("stooop"));
 	currentState = EBehaviorState::NONE;
 }
 void AFightingCharacter::Update() {
 	RegenPVAndMana();
 	UpdateCooldown();
-	if (!HasAuthority()) {
-		UE_LOG(LogTemp, Warning, TEXT("proutprout %d"), abilityList.Num());
-		for (auto& elem : abilityList)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("proutprout %f"), elem.Value);
-		}
-		
-	}
 	if (currentState == EBehaviorState::MOVE) {
 		MoveToward(targetLocation);
 	}
@@ -112,6 +107,7 @@ void AFightingCharacter::Update() {
 
 			UE_LOG(LogTemp, Warning, TEXT("On interagit"));
 			currentState = EBehaviorState::NONE;
+			GetMovementComponent()->StopActiveMovement();
 		}
 		else {
 			MoveToward(targetInteraction->GetActorLocation());
@@ -162,6 +158,9 @@ void AFightingCharacter::UpdateAbility() {
 		//abilityList[usedAbilityClass] = usedAbilityClass.GetDefaultObject()->skillAbilityDetails->cooldown;
 		SetCooldownOnClient(usedAbilityClass);
 		usedAbilityClass = nullptr;
+		if (HasAuthority()) {
+			usedAbility->Destroy();
+		}
 		usedAbility = nullptr;
 		UE_LOG(LogTemp, Warning, TEXT("Je peux bouger"));
 	}
@@ -173,6 +172,17 @@ void AFightingCharacter::EndCasting() {
 	
 	UE_LOG(LogTemp, Warning, TEXT("Le sort est lancee"));
 	this->endCastingTime = GetWorld()->TimeSeconds;
+}
+
+void AFightingCharacter::UseItem(TSubclassOf<AItem> itemClass) {
+
+	if (GetNbItem(itemClass) > 0) {
+		AItem* item = GetWorld()->SpawnActor<AItem>(itemClass);
+		item->ActivateItem(this);
+		item->Destroy();
+		DecreaseNbItem(itemClass, 1);
+		UE_LOG(LogTemp, Warning, TEXT("item numero"));
+	}
 }
 
 void AFightingCharacter::MoveToward(const FVector& location) {
@@ -254,6 +264,7 @@ void AFightingCharacter::CastCommand(TSubclassOf<ASkillAbility> abilityClass, AF
 	usedAbilityClass = abilityClass;
 	UE_LOG(LogTemp, Warning, TEXT("-------------------"));
 	usedAbility = GetWorld()->SpawnActor<ASkillAbility>(usedAbilityClass);
+	usedAbility->SetActorLabel("Squalala");
 	UE_LOG(LogTemp, Warning, TEXT("Je lance un sort sur ce type"));
 
 	spellTarget.fightingCharacter = target;
@@ -268,6 +279,7 @@ void AFightingCharacter::CastCommand(TSubclassOf<ASkillAbility> abilityClass, FV
 	UE_LOG(LogTemp, Warning, TEXT("-------------------"));
 	usedAbility = GetWorld()->SpawnActor<ASkillAbility>(usedAbilityClass);
 	UE_LOG(LogTemp, Warning, TEXT("Je lance un sort a un endroit"));
+	usedAbility->SetActorLabel("Squalala");
 
 	spellTarget.location = target;
 	spellTargetType = ETargetType::LOCATION;
@@ -279,6 +291,8 @@ void AFightingCharacter::CastCommand(TSubclassOf<ASkillAbility> abilityClass) {
 	usedAbilityClass = abilityClass;
 	UE_LOG(LogTemp, Warning, TEXT("-------------------"));
 	usedAbility = GetWorld()->SpawnActor<ASkillAbility>(usedAbilityClass);
+	usedAbility->SetActorLabel("Squalala");
+
 	UE_LOG(LogTemp, Warning, TEXT("Je lance un sort"));
 
 	spellTargetType = ETargetType::NONE;
@@ -324,4 +338,39 @@ void AFightingCharacter::SetCooldownOnClient_Implementation(TSubclassOf<ASkillAb
 	else {
 		abilityList[ability] = ability.GetDefaultObject()->skillAbilityDetails->cooldown;
 	}
+}
+
+
+int AFightingCharacter::GetNbItem(TSubclassOf<AItem> item) {
+	if (itemList.Contains(item)) {
+		return itemList[item];
+	}
+	return 0;
+}
+void AFightingCharacter::IncreaseNbItem_Implementation(TSubclassOf<AItem> item, int increment) {
+	if (itemList.Contains(item)) {
+		itemList[item] = itemList[item] + increment;
+	}
+	else {
+		itemList.Add(item, increment);
+	}
+}
+void AFightingCharacter::DecreaseNbItem_Implementation(TSubclassOf<AItem> item, int decrement) {
+	if (itemList.Contains(item)) {
+		int value = itemList[item] - decrement;
+		itemList[item] = value > 0 ? value : 0;
+	}
+}
+
+void AFightingCharacter::IncreasePV(int increment) {
+	PV = PV + increment > stats->GetPVMax() ? stats->GetPVMax() : PV + increment;
+}
+void AFightingCharacter::DecreasePV(int decrement) {
+	PV = PV < decrement ? 0 : PV - decrement;
+}
+void AFightingCharacter::IncreaseMana(int increment) {
+	mana = mana+ increment > stats->GetManaMax() ? stats->GetManaMax() : mana + increment;
+}
+void AFightingCharacter::DecreaseMana(int decrement) {
+	mana = mana < decrement ? 0 : mana - decrement;
 }
