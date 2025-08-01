@@ -4,22 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Loot.h"
-#include "ItemLoot.generated.h"
+#include "StatBoostLoot.generated.h"
 
 /**
  * 
  */
-class AItem;
-
+enum class StatEnum:uint8;
 UCLASS()
-class PROJET_MMORPG_API AItemLoot : public ALoot
+class PROJET_MMORPG_API AStatBoostLoot : public ALoot
 {
 	GENERATED_BODY()
 protected:
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<AItem> itemClass;
+	StatEnum statBoosted;
 
 public:
 	void virtual Interact(AFightingCharacter* interactor) override;
-
 };

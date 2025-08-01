@@ -5,17 +5,8 @@
 
 void AItemLoot::Interact(AFightingCharacter* interactor) {
 
-	UE_LOG(LogTemp, Warning, TEXT("Hatsune Miku"));
 	interactor->IncreaseNbItem(itemClass, quantity);
-	DestroyOnServer();
+	Super::Interact(interactor);
 
-}
-void AItemLoot::DestroyOnServer_Implementation() {
-	UE_LOG(LogTemp, Warning, TEXT("Kasane Teto %d"), HasAuthority());
-	this->Destroy();
-}
-void AItemLoot::DestroyOnClient_Implementation() {
-	UE_LOG(LogTemp, Warning, TEXT("Neru %d"), HasAuthority());
-	this->Destroy();
 }
 

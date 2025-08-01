@@ -19,6 +19,7 @@ union SpellTarget {
 
 class AInteractableActor;
 class UStatsComponent;
+class ULevelProgressionComponent;
 
 class UAbilityList;
 class ASkillAbility;
@@ -81,8 +82,10 @@ protected:
 
 	
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	UStatsComponent* stats;
+
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	float PV;
@@ -94,6 +97,8 @@ protected:
 
 public:	
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	ULevelProgressionComponent* levelProgressionComponent;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	float mana;
@@ -122,7 +127,7 @@ public:
 	void Update();
 	void UpdateAbility();
 	void SetAttributes(UFightingCharacterAttributes* attributes);
-	void TakeHit(int damage);
+	void TakeHit(int damage, AFightingCharacter* attacker);
 
 	UStatsComponent * GetStats();
 
@@ -134,7 +139,7 @@ public:
 
 	bool CanInterruptAction();
 
-	UFUNCTION()
+	UFUNCTION(NetMulticast, Reliable)
 	void AddAbility(TSubclassOf<ASkillAbility> ability);
 
 	UFUNCTION(NetMulticast, Reliable)

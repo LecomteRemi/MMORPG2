@@ -7,6 +7,16 @@
 #include "StatsGrowthAsset.h"
 #include "StatsComponent.generated.h"
 
+UENUM(BlueprintType)
+enum class StatEnum : uint8 {
+	CONSTITUTION = 0 UMETA(DisplayName = "CONSTITUTION"),
+	STRENGTH = 1  UMETA(DisplayName = "STRENGTH"),
+	DEFENSE = 2     UMETA(DisplayName = "DEFENSE"),
+	MAGIC = 3 UMETA(DisplayName = "MAGIC"),
+	MIND = 4 UMETA(DisplayName = "MIND"),
+	SKILL = 5 UMETA(DisplayName = "SKILL"),
+	AGILITY = 6 UMETA(DisplayName = "AGILITY")
+};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJET_MMORPG_API UStatsComponent : public UActorComponent
@@ -77,7 +87,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int GetLevel();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
 	void LevelUp();
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	void IncreaseStats(StatEnum statEnum, int increment);
 		
 };

@@ -44,6 +44,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<AItem>> itemBarList;
 
+
+	UPROPERTY(EditAnywhere)
+	TArray<TSubclassOf<ASkillAbility>> skillList;
+
+
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 private:

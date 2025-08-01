@@ -11,6 +11,7 @@
 #include "SkillAbilityDetails.h"
 #include "Net/UnrealNetwork.h"
 #include "Item.h"
+#include "LevelProgressionComponent.h"
 // Sets default values
 AFightingCharacter::AFightingCharacter()
 {
@@ -19,6 +20,11 @@ AFightingCharacter::AFightingCharacter()
 	currentState = EBehaviorState::NONE;
 
 	stats = CreateDefaultSubobject<UStatsComponent>(TEXT("Stats Component"));
+	levelProgressionComponent = CreateDefaultSubobject<ULevelProgressionComponent>(TEXT("Level progression Component"));
+	levelProgressionComponent->SetIsReplicated(true);
+	levelProgressionComponent->stats = stats;
+	levelProgressionComponent->character = this;
+
 	
 	
 
@@ -103,6 +109,7 @@ void AFightingCharacter::Update() {
 			currentState = EBehaviorState::NONE;
 		}
 		else if(FVector::Dist2D(this->GetActorLocation(),targetInteraction->GetActorLocation()) <= attributes->interactionRange) {
+			if(targetInteraction->IsInteractable())
 			targetInteraction->Interact(this);
 
 			UE_LOG(LogTemp, Warning, TEXT("On interagit"));
@@ -199,7 +206,7 @@ void AFightingCharacter::Attack(AFightingCharacter* enemy) {
 		float precisionRoll = FMath::FRand() * FMath::FRand();
 		if (precisionRoll < stats->GetPrecision() - enemy->stats->GetAvoidance()) {
 			int damages = stats->GetDamages() - enemy->stats->GetArmor();
-			enemy->TakeHit(damages);
+			enemy->TakeHit(damages,this);
 			UE_LOG(LogTemp, Warning, TEXT("J'attaque precision: %f, esquive: %f"), stats->GetPrecision(), enemy->stats->GetAvoidance());
 		}
 		else {
@@ -225,10 +232,11 @@ void AFightingCharacter::RegenPVAndMana() {
 	mana = mana < 0 ? 0 : mana > stats->GetManaMax() ? stats->GetManaMax() : mana;
 	//mana = 0;
 }
-void AFightingCharacter::TakeHit(int damage) {
+void AFightingCharacter::TakeHit(int damage, AFightingCharacter * attacker) {
 	PV -= damage;
 	PV = PV < 0 ? 0 : PV;
 	if (PV < 1) {
+		attacker->levelProgressionComponent->AddExp(10);
 		Die();
 	}
 	else {
@@ -307,9 +315,10 @@ void AFightingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AFightingCharacter, mana);
 	DOREPLIFETIME(AFightingCharacter, PV);
+	DOREPLIFETIME(AFightingCharacter, stats);
 }
 
-void AFightingCharacter::AddAbility(TSubclassOf<ASkillAbility> ability) {
+void AFightingCharacter::AddAbility_Implementation(TSubclassOf<ASkillAbility> ability) {
 	abilityList.Add(ability,0);
 	//SetCooldownOnClient(ability);
 	UE_LOG(LogTemp, Warning, TEXT("Todokeyo!"));

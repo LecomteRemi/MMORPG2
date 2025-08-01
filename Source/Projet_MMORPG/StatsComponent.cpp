@@ -67,7 +67,9 @@ int UStatsComponent::GetLevel() {
 	return level;
 }
 
-void UStatsComponent::LevelUp() {
+void UStatsComponent::LevelUp_Implementation() {
+
+	UE_LOG(LogTemp, Warning, TEXT("level up: %d"), level+1);
 	level++;
 	constitution += statsGrowth->constitutionGrowth;
 	strength += statsGrowth->strengthGrowth;
@@ -78,3 +80,31 @@ void UStatsComponent::LevelUp() {
 	skill += statsGrowth->skillGrowth;
 }
 
+void UStatsComponent::IncreaseStats_Implementation(StatEnum statEnum, int increment) {
+	switch (statEnum)
+	{
+	case StatEnum::CONSTITUTION:
+		constitution += increment;
+		break;
+	case StatEnum::STRENGTH:
+		strength += increment;
+		break;
+	case StatEnum::DEFENSE:
+		defense += increment;
+		break;
+	case StatEnum::MAGIC:
+		magic += increment;
+		break;
+	case StatEnum::MIND:
+		mind += increment;
+		break;
+	case StatEnum::SKILL:
+		skill += increment;
+		break;
+	case StatEnum::AGILITY:
+		agility += increment;
+		break;
+	default:
+		break;
+	}
+}

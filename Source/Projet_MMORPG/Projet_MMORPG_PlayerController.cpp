@@ -45,10 +45,10 @@
 
 
 
-		 skillBarList[0] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[0]; //mockupAbilityClass;
+		 skillBarList[0] = skillList[0]; //Cast<APlayerPawn>(GetPawn())->abilityList->abilities[0]; //mockupAbilityClass;
 
-		 skillBarList[1] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];
-		 skillBarList[2] = Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];
+		 skillBarList[1] = skillList[1];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[1];
+		 skillBarList[2] = skillList[2];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];//Cast<APlayerPawn>(GetPawn())->abilityList->abilities[2];
 		 itemBarList.Add(GetPawn<APlayerPawn>()->healingItem);
 		 itemBarList.Add(GetPawn<APlayerPawn>()->manaItem);
 

@@ -3,6 +3,7 @@
 #include "PlayerPawn.h"
 #include "AbilityList.h"
 #include "Net/UnrealNetwork.h"
+#include "LevelProgressionComponent.h"
 
 // Sets default values
 APlayerPawn::APlayerPawn()
@@ -47,11 +48,11 @@ void APlayerPawn::Tick(float DeltaTime)
 	if (!initiated && fightingCharacter != nullptr) {
 		initiated = true;
 
-		if (abilityList != nullptr) {
+		/*if (abilityList != nullptr) {
 			for (int i = 0; i < abilityList->abilities.Num(); i++) {
 				fightingCharacter->AddAbility(abilityList->abilities[i]);
 			}
-		}
+		}*/
 
 		fightingCharacter->IncreaseNbItem(healingItem, 5);
 		fightingCharacter->IncreaseNbItem(manaItem, 8);
@@ -92,17 +93,18 @@ void APlayerPawn::UseItem_Implementation(TSubclassOf<AItem> itemClass) {
 void APlayerPawn::Init() {
 	
 	fightingCharacter = GetWorld()->SpawnActor<AFightingCharacter>(fightingCharacterClass, GetActorLocation(), GetActorRotation());
+	fightingCharacter->levelProgressionComponent->canGainExp=true;
 	AttachToActor(fightingCharacter, FAttachmentTransformRules::KeepRelativeTransform);
 	SetActorRelativeLocation(FVector::ZeroVector);
 	fightingCharacter->SpawnDefaultController();
 	fightingCharacter->SetAttributes(attributes);
-	if (abilityList != nullptr) {
+	/*if (abilityList != nullptr) {
 		if (fightingCharacter != nullptr) {
 			for (int i = 0; i < abilityList->abilities.Num(); i++) {
 				fightingCharacter->AddAbility(abilityList->abilities[i]);
 			}
 		}
-	}
+	}*/
 	fightingCharacter->IncreaseNbItem(healingItem, 5);
 	fightingCharacter->IncreaseNbItem(manaItem, 8);
 	
