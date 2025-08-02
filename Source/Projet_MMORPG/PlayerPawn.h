@@ -13,6 +13,7 @@
 
 class AInteractableActor;
 class UAbilityList;
+class AItem;
 
 UCLASS()
 class PROJET_MMORPG_API APlayerPawn : public APawn
@@ -45,6 +46,12 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	UAbilityList* abilityList;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AItem> healingItem;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AItem> manaItem;
+
 
 
 
@@ -79,7 +86,9 @@ public:
 	void Init();
 
 	UFUNCTION(Server, Reliable)
-	void UseAction( TSubclassOf<ASkillAbility> skillAbilityClass);
+	void UseAction(TSubclassOf<ASkillAbility> skillAbilityClass);
+	UFUNCTION(Server, Reliable)
+	void UseItem(TSubclassOf<AItem> itemClass);
 
 	UFUNCTION(Server, Reliable)
 	void UseActionFighter(  TSubclassOf<ASkillAbility> skillAbilityClass, AFightingCharacter * target);

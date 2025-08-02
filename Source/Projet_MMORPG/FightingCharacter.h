@@ -19,9 +19,12 @@ union SpellTarget {
 
 class AInteractableActor;
 class UStatsComponent;
+class ULevelProgressionComponent;
 
 class UAbilityList;
 class ASkillAbility;
+class AItem;
+class APlayerPawn;
 
 UCLASS(BlueprintType)
 class PROJET_MMORPG_API AFightingCharacter : public ACharacter
@@ -80,8 +83,10 @@ protected:
 
 	
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	UStatsComponent* stats;
+
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	float PV;
@@ -93,12 +98,21 @@ protected:
 
 public:	
 
+	UFUNCTION(BlueprintCallable)
+	FVector GetSpellTargetLocation();
+	UFUNCTION(BlueprintCallable)
+	AFightingCharacter* GetSpellTargetCharacter();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	ULevelProgressionComponent* levelProgressionComponent;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	float mana;
 
 	UPROPERTY(EditAnywhere)
 	TMap<TSubclassOf<ASkillAbility>, float> abilityList;
+	UPROPERTY(EditAnywhere)
+	TMap<TSubclassOf<AItem>, int> itemList;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -115,10 +129,13 @@ public:
 	void CastCommand(TSubclassOf<ASkillAbility> abilityClass,AFightingCharacter* target);
 	void CastCommand(TSubclassOf<ASkillAbility> abilityClass, FVector target);
 	void CastCommand(TSubclassOf<ASkillAbility> abilityClass);
+	void UseItem(TSubclassOf<AItem> itemClass);
 	void Update();
 	void UpdateAbility();
 	void SetAttributes(UFightingCharacterAttributes* attributes);
-	void TakeHit(int damage);
+
+	UFUNCTION(BlueprintCallable)
+	void TakeHit(int damage, AFightingCharacter* attacker);
 
 	UStatsComponent * GetStats();
 
@@ -130,14 +147,28 @@ public:
 
 	bool CanInterruptAction();
 
-	UFUNCTION()
+	UFUNCTION(NetMulticast, Reliable)
 	void AddAbility(TSubclassOf<ASkillAbility> ability);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void SetCooldownOnClient(TSubclassOf<ASkillAbility> ability);
 
-	
 
+	UFUNCTION()
+	int GetNbItem(TSubclassOf<AItem> item);
+	UFUNCTION(NetMulticast, Reliable)
+	void IncreaseNbItem(TSubclassOf<AItem> item, int increment);
+	UFUNCTION(NetMulticast, Reliable)
+	void DecreaseNbItem(TSubclassOf<AItem> item, int decrement);
+
+	UFUNCTION(BlueprintCallable)
+	void IncreasePV(int increment);
+	UFUNCTION(BlueprintCallable)
+	void DecreasePV(int decrement);
+	UFUNCTION(BlueprintCallable)
+	void IncreaseMana(int increment);
+	UFUNCTION(BlueprintCallable)
+	void DecreaseMana(int decrement);
 
 
 

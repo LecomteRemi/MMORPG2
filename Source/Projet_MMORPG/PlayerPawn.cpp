@@ -3,6 +3,7 @@
 #include "PlayerPawn.h"
 #include "AbilityList.h"
 #include "Net/UnrealNetwork.h"
+#include "LevelProgressionComponent.h"
 
 // Sets default values
 APlayerPawn::APlayerPawn()
@@ -47,16 +48,21 @@ void APlayerPawn::Tick(float DeltaTime)
 	if (!initiated && fightingCharacter != nullptr) {
 		initiated = true;
 
-		if (abilityList != nullptr) {
-			for (int i = 0; i < abilityList->abilities.Num()-1; i++) {
+		/*if (abilityList != nullptr) {
+			for (int i = 0; i < abilityList->abilities.Num(); i++) {
 				fightingCharacter->AddAbility(abilityList->abilities[i]);
 			}
-		}
+		}*/
+
+		fightingCharacter->IncreaseNbItem(healingItem, 5);
+		fightingCharacter->IncreaseNbItem(manaItem, 8);
+		/*fightingCharacter->IncreaseNbItem(healingItem, 0);
+		fightingCharacter->IncreaseNbItem(manaItem, 0);*/
 	}
 
-	if (fightingCharacter == nullptr) {
+	/*if (fightingCharacter == nullptr) {
 		this->fightingCharacter = Cast<AFightingCharacter>(GetAttachParentActor());
-	}
+	}*/
 
 	
 }
@@ -70,7 +76,6 @@ void APlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 void APlayerPawn::MoveToward_Implementation(FVector location) {
 	fightingCharacter->MoveCommand(location);
-	fightingCharacter->AddAbility(abilityList->abilities[2]);
 
 }
 void APlayerPawn::Attack_Implementation(AFightingCharacter * enemy) {
@@ -80,20 +85,28 @@ void APlayerPawn::Attack_Implementation(AFightingCharacter * enemy) {
 void APlayerPawn::StopAction_Implementation() {
 	
 }
+
+void APlayerPawn::UseItem_Implementation(TSubclassOf<AItem> itemClass) {
+	fightingCharacter->UseItem(itemClass);
+	UE_LOG(LogTemp, Warning, TEXT("item numero "));
+}
 void APlayerPawn::Init() {
 	
 	fightingCharacter = GetWorld()->SpawnActor<AFightingCharacter>(fightingCharacterClass, GetActorLocation(), GetActorRotation());
+	fightingCharacter->levelProgressionComponent->canGainExp=true;
 	AttachToActor(fightingCharacter, FAttachmentTransformRules::KeepRelativeTransform);
 	SetActorRelativeLocation(FVector::ZeroVector);
 	fightingCharacter->SpawnDefaultController();
 	fightingCharacter->SetAttributes(attributes);
-	if (abilityList != nullptr) {
+	/*if (abilityList != nullptr) {
 		if (fightingCharacter != nullptr) {
-			for (int i = 0; i < abilityList->abilities.Num() - 1; i++) {
+			for (int i = 0; i < abilityList->abilities.Num(); i++) {
 				fightingCharacter->AddAbility(abilityList->abilities[i]);
 			}
 		}
-	}
+	}*/
+	fightingCharacter->IncreaseNbItem(healingItem, 5);
+	fightingCharacter->IncreaseNbItem(manaItem, 8);
 	
 	
 }

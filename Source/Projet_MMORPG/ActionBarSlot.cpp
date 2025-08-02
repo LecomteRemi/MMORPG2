@@ -18,13 +18,13 @@ void UActionBarSlot::ActivateAction() {
 }
 
 void UActionBarSlot::UpdateActionSlotData() {
-	TSubclassOf<ASkillAbility> ability = controller->actionBarList[actionBarSlotIdx];
+	TSubclassOf<ASkillAbility> ability = controller->skillBarList[actionBarSlotIdx];
 	if (ability != nullptr && playerPawn->fightingCharacter != nullptr) {
 
 		//UE_LOG(LogTemp, Warning, TEXT("Ok1"));
 		if (playerPawn->fightingCharacter->abilityList.Contains(ability)) {
 
-			UE_LOG(LogTemp, Warning, TEXT("Ok1 %d %d %d"), actionBarSlotIdx, IsRunningDedicatedServer(), playerPawn->fightingCharacter->abilityList.Contains(ability));
+			
 			actionCooldownPercentage = ability.GetDefaultObject()->skillAbilityDetails->cooldown == 0 ? 0 : playerPawn->fightingCharacter->abilityList[ability] / ability.GetDefaultObject()->skillAbilityDetails->cooldown;
 			image = ability.GetDefaultObject()->actionDetails->image;
 		}
@@ -33,7 +33,6 @@ void UActionBarSlot::UpdateActionSlotData() {
 			image = nullptr;
 		}
 	}
-	//actionCooldownPercentage = playerPawn->fightingCharacter->abilityList[ability] / ability.GetDefaultObject()->skillAbilityDetails->cooldown;
 }
 
 void UActionBarSlot::Init(int idx) {
