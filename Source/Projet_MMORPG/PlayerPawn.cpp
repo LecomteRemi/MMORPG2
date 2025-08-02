@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AbilityList.h"
 #include "PlayerPawn.h"
+#include "AbilityList.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values

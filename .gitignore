@@ -1,0 +1,10 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.idea/.idea.Projet_MMORPG/.idea
+/.vs
+/Binaries/Win64
+/Plugins/VisualStudioTools
+/Intermediate
+/Saved
