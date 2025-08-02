@@ -383,3 +383,10 @@ void AFightingCharacter::IncreaseMana(int increment) {
 void AFightingCharacter::DecreaseMana(int decrement) {
 	mana = mana < decrement ? 0 : mana - decrement;
 }
+
+FVector AFightingCharacter::GetSpellTargetLocation() {
+	return spellTarget.location;
+}
+AFightingCharacter* AFightingCharacter::GetSpellTargetCharacter() {
+	return spellTarget.fightingCharacter;
+}

@@ -24,6 +24,7 @@ class ULevelProgressionComponent;
 class UAbilityList;
 class ASkillAbility;
 class AItem;
+class APlayerPawn;
 
 UCLASS(BlueprintType)
 class PROJET_MMORPG_API AFightingCharacter : public ACharacter
@@ -97,6 +98,11 @@ protected:
 
 public:	
 
+	UFUNCTION(BlueprintCallable)
+	FVector GetSpellTargetLocation();
+	UFUNCTION(BlueprintCallable)
+	AFightingCharacter* GetSpellTargetCharacter();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	ULevelProgressionComponent* levelProgressionComponent;
 	
@@ -127,6 +133,8 @@ public:
 	void Update();
 	void UpdateAbility();
 	void SetAttributes(UFightingCharacterAttributes* attributes);
+
+	UFUNCTION(BlueprintCallable)
 	void TakeHit(int damage, AFightingCharacter* attacker);
 
 	UStatsComponent * GetStats();
